@@ -1,9 +1,14 @@
-import { useState } from "react";
-import { saveProduct } from "../services/productService";
+import { useState, useEffect } from "react";
+import { saveProduct, updateProduct } from "../services/productService";
 
-export default function ProductForm({ onProductSaved }) {
+export default function ProductForm({
+    onProductSaved,
+    selectedProduct,
+    isEditing,
+    setIsEditing
+}) {
 
-    const [product, setProduct] = useState({
+    const emptyProduct = {
         productCode: "",
         productName: "",
         brand: "",
@@ -12,15 +17,33 @@ export default function ProductForm({ onProductSaved }) {
         warrantyMonths: "",
         barcode: "",
         status: true
-    });
+    };
+
+    const [product, setProduct] = useState(emptyProduct);
+
+    useEffect(() => {
+        if (selectedProduct) {
+            setProduct({
+                productId: selectedProduct.productId,
+                productCode: selectedProduct.productCode,
+                productName: selectedProduct.productName,
+                brand: selectedProduct.brand,
+                model: selectedProduct.model,
+                sellingPrice: selectedProduct.sellingPrice,
+                warrantyMonths: selectedProduct.warrantyMonths,
+                barcode: selectedProduct.barcode || "",
+                status: selectedProduct.status
+            });
+        }
+    }, [selectedProduct]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
 
-        setProduct({
-            ...product,
+        setProduct((prev) => ({
+            ...prev,
             [name]: type === "checkbox" ? checked : value
-        });
+        }));
     };
 
     const handleSubmit = async (e) => {
@@ -28,24 +51,20 @@ export default function ProductForm({ onProductSaved }) {
 
         try {
 
-            await saveProduct(product);
+            if (isEditing) {
+                await updateProduct(product.productId, product);
+                alert("Product Updated Successfully");
+            } else {
+                await saveProduct(product);
+                alert("Product Saved Successfully");
+            }
 
             if (onProductSaved) {
                 await onProductSaved();
             }
 
-            alert("Product Saved Successfully");
-
-            setProduct({
-                productCode: "",
-                productName: "",
-                brand: "",
-                model: "",
-                sellingPrice: "",
-                warrantyMonths: "",
-                barcode: "",
-                status: true
-            });
+            setProduct(emptyProduct);
+            setIsEditing(false);
 
         } catch (error) {
             console.error(error);
@@ -57,7 +76,7 @@ export default function ProductForm({ onProductSaved }) {
         <div className="bg-white rounded-xl shadow p-6">
 
             <h2 className="text-2xl font-bold mb-6">
-                Add Product
+                {isEditing ? "Edit Product" : "Add Product"}
             </h2>
 
             <form
@@ -136,26 +155,36 @@ export default function ProductForm({ onProductSaved }) {
                 />
 
                 <label className="flex items-center gap-3">
-
                     <input
                         type="checkbox"
                         name="status"
                         checked={product.status}
                         onChange={handleChange}
                     />
-
                     Active Product
-
                 </label>
 
-                <div className="col-span-2">
+                <div className="col-span-2 flex gap-3">
 
                     <button
                         type="submit"
                         className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg"
                     >
-                        Save Product
+                        {isEditing ? "Update Product" : "Save Product"}
                     </button>
+
+                    {isEditing && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setProduct(emptyProduct);
+                                setIsEditing(false);
+                            }}
+                            className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg"
+                        >
+                            Cancel
+                        </button>
+                    )}
 
                 </div>
 
