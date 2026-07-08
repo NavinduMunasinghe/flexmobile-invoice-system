@@ -8,7 +8,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin
 public class ProductController {
 
     private final ProductService productService;
@@ -32,15 +31,18 @@ public class ProductController {
         return productService.getProductById(id);
     }
 
-    @DeleteMapping("/{id}")
-    public String deleteProduct(@PathVariable Long id) {
-        productService.deleteProduct(id);
-        return "Product deleted successfully.";
+    @PutMapping("/{id}")
+    public Product updateProduct(@PathVariable Long id,
+                                 @RequestBody Product product) {
+
+        product.setProductId(id);
+
+        return productService.saveProduct(product);
     }
 
-    @PutMapping("/{id}")
-    public Product updateProduct(@PathVariable Long id, @RequestBody Product product) {
-        product.setProductId(id);
-        return productService.saveProduct(product);
-}
+    @DeleteMapping("/{id}")
+    public void deleteProduct(@PathVariable Long id) {
+        productService.deleteProduct(id);
+    }
+
 }

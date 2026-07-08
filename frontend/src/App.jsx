@@ -6,9 +6,12 @@ import Customers from "./pages/Customers";
 import Serials from "./pages/Serials";
 import NewInvoice from "./pages/NewInvoice";
 import Invoices from "./pages/Invoices";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   return (
+    
     <BrowserRouter>
       <Routes>
         <Route element={<MainLayout />}>
@@ -20,6 +23,15 @@ function App() {
           <Route path="/invoices" element={<Invoices />} />
         </Route>
       </Routes>
+      <ToastContainer
+    position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        theme="colored"
+    />
     </BrowserRouter>
   );
 }

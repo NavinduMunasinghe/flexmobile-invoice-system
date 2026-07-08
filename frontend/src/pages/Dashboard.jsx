@@ -17,14 +17,21 @@ export default function Dashboard() {
         loadDashboard();
     }, []);
 
-    const loadDashboard = async () => {
+    async function loadDashboard() {
+
         try {
+    
             const response = await getDashboardSummary();
+    
             setSummary(response.data);
+    
         } catch (error) {
+    
             console.error("Failed to load dashboard", error);
+    
         }
-    };
+    
+    }
 
     return (
 

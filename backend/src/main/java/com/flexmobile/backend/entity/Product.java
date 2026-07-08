@@ -45,5 +45,16 @@ public class Product {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+    public Long getProductId() {
+    return productId;
+}
+
+public void setProductId(Long productId) {
+    this.productId = productId;
+}
+
+public String getProductCode() {
+    return productCode;
+}
 
 }

@@ -1,5 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+
 import ProductForm from "../components/ProductForm";
+import ProductSearch from "../components/ProductSearch";
+import ProductTable from "../components/ProductTable";
+
 import {
     getProducts,
     deleteProduct
@@ -8,21 +13,114 @@ import {
 export default function Products() {
 
     const [products, setProducts] = useState([]);
+    const [filteredProducts, setFilteredProducts] = useState([]);
+    const [search, setSearch] = useState("");
+
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
 
+    // Pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const productsPerPage = 5;
+
+    // ===========================
+    // Load Products
+    // ===========================
+
+    async function loadProducts() {
+
+        try {
+
+            const response = await getProducts();
+
+            setProducts(response.data);
+            setFilteredProducts(response.data);
+
+        } catch (error) {
+
+            console.error(error);
+
+        }
+
+    }
+
+    // ===========================
+    // Initial Load
+    // ===========================
+
     useEffect(() => {
+
         loadProducts();
+
     }, []);
 
-    const loadProducts = async () => {
-        try {
-            const response = await getProducts();
-            setProducts(response.data);
-        } catch (error) {
-            console.error(error);
-        }
-    };
+    // ===========================
+    // Search
+    // ===========================
+
+    useEffect(() => {
+
+        const keyword = search.toLowerCase();
+
+        const filtered = products.filter((product) => {
+
+            return (
+
+                (product.productCode || "")
+                    .toLowerCase()
+                    .includes(keyword)
+
+                ||
+
+                (product.productName || "")
+                    .toLowerCase()
+                    .includes(keyword)
+
+                ||
+
+                (product.brand || "")
+                    .toLowerCase()
+                    .includes(keyword)
+
+                ||
+
+                (product.model || "")
+                    .toLowerCase()
+                    .includes(keyword)
+
+            );
+
+        });
+
+        setFilteredProducts(filtered);
+
+        // Search කරනකොට page 1 ට යනවා
+        setCurrentPage(1);
+
+    }, [search, products]);
+
+    // ===========================
+    // Pagination
+    // ===========================
+
+    const indexOfLastProduct = currentPage * productsPerPage;
+
+    const indexOfFirstProduct =
+        indexOfLastProduct - productsPerPage;
+
+    const currentProducts =
+        filteredProducts.slice(
+            indexOfFirstProduct,
+            indexOfLastProduct
+        );
+
+    const totalPages = Math.ceil(
+        filteredProducts.length / productsPerPage
+    );
+
+    // ===========================
+    // Delete Product
+    // ===========================
 
     const handleDelete = async (id) => {
 
@@ -36,34 +134,57 @@ export default function Products() {
 
             await deleteProduct(id);
 
-            alert("Product Deleted Successfully");
+            toast.success("Product deleted successfully!");
 
             loadProducts();
 
         } catch (error) {
+
             console.error(error);
-            alert("Error deleting product");
+
+            toast.error("Failed to delete product.");
+
         }
+
+    };
+
+    // ===========================
+    // Edit Product
+    // ===========================
+
+    const handleEdit = (product) => {
+
+        setSelectedProduct(product);
+
+        setIsEditing(true);
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
     };
 
     return (
+
         <div className="space-y-6">
 
             <div className="flex justify-between items-center">
+
                 <h1 className="text-3xl font-bold">
                     Products
                 </h1>
 
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                    + Add Product
-                </button>
             </div>
 
-            <input
-                type="text"
-                placeholder="Search products..."
-                className="w-full border rounded-lg p-3"
+            {/* Search */}
+
+            <ProductSearch
+                search={search}
+                setSearch={setSearch}
             />
+
+            {/* Product Form */}
 
             <ProductForm
                 onProductSaved={loadProducts}
@@ -72,102 +193,45 @@ export default function Products() {
                 setIsEditing={setIsEditing}
             />
 
-            <div className="bg-white rounded-xl shadow overflow-hidden">
+            {/* Product Table */}
 
-                <table className="w-full">
+            <ProductTable
+                products={currentProducts}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+            />
 
-                    <thead className="bg-slate-200">
+            {/* Pagination */}
 
-                        <tr>
+            <div className="flex justify-between items-center">
 
-                            <th className="p-3 text-left">Code</th>
-                            <th className="p-3 text-left">Name</th>
-                            <th className="p-3 text-left">Brand</th>
-                            <th className="p-3 text-left">Model</th>
-                            <th className="p-3 text-right">Price</th>
-                            <th className="p-3 text-center">Actions</th>
+                <button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded disabled:opacity-50"
+                >
+                    Previous
+                </button>
 
-                        </tr>
+                <span className="font-medium">
+                    Page {currentPage} of {totalPages || 1}
+                </span>
 
-                    </thead>
-
-                    <tbody>
-
-                        {products.length === 0 ? (
-
-                            <tr>
-
-                                <td
-                                    colSpan="6"
-                                    className="text-center p-6 text-gray-500"
-                                >
-                                    No Products Found
-                                </td>
-
-                            </tr>
-
-                        ) : (
-
-                            products.map((product) => (
-
-                                <tr
-                                    key={product.productId}
-                                    className="border-t hover:bg-gray-50"
-                                >
-
-                                    <td className="p-3">
-                                        {product.productCode}
-                                    </td>
-
-                                    <td className="p-3">
-                                        {product.productName}
-                                    </td>
-
-                                    <td className="p-3">
-                                        {product.brand}
-                                    </td>
-
-                                    <td className="p-3">
-                                        {product.model}
-                                    </td>
-
-                                    <td className="p-3 text-right">
-                                        Rs. {product.sellingPrice}
-                                    </td>
-
-                                    <td className="p-3 text-center">
-
-                                        <button
-                                            onClick={() => {
-                                                setSelectedProduct(product);
-                                                setIsEditing(true);
-                                            }}
-                                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded mr-2"
-                                        >
-                                            Edit
-                                        </button>
-
-                                        <button
-                                            onClick={() => handleDelete(product.productId)}
-                                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
-                                        >
-                                            Delete
-                                        </button>
-
-                                    </td>
-
-                                </tr>
-
-                            ))
-
-                        )}
-
-                    </tbody>
-
-                </table>
+                <button
+                    disabled={
+                        currentPage === totalPages ||
+                        totalPages === 0
+                    }
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded disabled:opacity-50"
+                >
+                    Next
+                </button>
 
             </div>
 
         </div>
+
     );
+
 }

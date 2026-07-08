@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { saveProduct, updateProduct } from "../services/productService";
+import { toast } from "react-toastify";
 
 export default function ProductForm({
     onProductSaved,
@@ -51,12 +52,46 @@ export default function ProductForm({
 
         try {
 
+            // ===========================
+            // Validation
+            // ===========================
+
+            if (product.productCode.trim() === "") {
+                toast.error("Product Code is required.");
+                return;
+            }
+
+            if (product.productName.trim() === "") {
+                toast.error("Product Name is required.");
+                return;
+            }
+
+            if (product.brand.trim() === "") {
+                toast.error("Brand is required.");
+                return;
+            }
+
+            if (product.model.trim() === "") {
+                toast.error("Model is required.");
+                return;
+            }
+
+            if (Number(product.sellingPrice) <= 0) {
+                toast.error("Selling Price must be greater than 0.");
+                return;
+            }
+
+            if (Number(product.warrantyMonths) < 0) {
+                toast.error("Warranty cannot be negative.");
+                return;
+            }
+
             if (isEditing) {
                 await updateProduct(product.productId, product);
-                alert("Product Updated Successfully");
+                toast.success("Product saved successfully!");
             } else {
                 await saveProduct(product);
-                alert("Product Saved Successfully");
+                toast.success("Product updated successfully!");
             }
 
             if (onProductSaved) {
@@ -68,7 +103,11 @@ export default function ProductForm({
 
         } catch (error) {
             console.error(error);
-            alert("Error Saving Product");
+            toast.error(
+                error.response?.data?.message ||
+                error.message ||
+                "Failed to save product."
+            );
         }
     };
 
@@ -165,13 +204,16 @@ export default function ProductForm({
                 </label>
 
                 <div className="col-span-2 flex gap-3">
-
-                    <button
-                        type="submit"
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg"
-                    >
-                        {isEditing ? "Update Product" : "Save Product"}
-                    </button>
+                <button
+                    type="submit"
+                    className={`px-6 py-3 rounded-lg text-white font-medium ${
+                        isEditing
+                            ? "bg-yellow-500 hover:bg-yellow-600"
+                            : "bg-blue-600 hover:bg-blue-700"
+                    }`}
+                >
+                    {isEditing ? "Update Product" : "Save Product"}
+                </button>
 
                     {isEditing && (
                         <button

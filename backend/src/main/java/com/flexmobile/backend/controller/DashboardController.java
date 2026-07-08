@@ -2,10 +2,7 @@ package com.flexmobile.backend.controller;
 
 import com.flexmobile.backend.dto.DashboardSummaryDTO;
 import com.flexmobile.backend.service.DashboardService;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/dashboard")
@@ -18,7 +15,7 @@ public class DashboardController {
         this.dashboardService = dashboardService;
     }
 
-    @GetMapping
+    @GetMapping("/summary")
     public DashboardSummaryDTO getDashboardSummary() {
         return dashboardService.getDashboardSummary();
     }

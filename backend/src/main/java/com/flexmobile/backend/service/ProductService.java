@@ -5,6 +5,7 @@ import com.flexmobile.backend.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProductService {
@@ -16,7 +17,24 @@ public class ProductService {
     }
 
     public Product saveProduct(Product product) {
+
+        Optional<Product> existingProduct =
+                productRepository.findByProductCode(product.getProductCode());
+
+        if (existingProduct.isPresent()) {
+
+            // Allow update of the same product
+            if (product.getProductId() == null ||
+                    !existingProduct.get().getProductId().equals(product.getProductId())) {
+
+                throw new RuntimeException("Product Code already exists.");
+
+            }
+
+        }
+
         return productRepository.save(product);
+
     }
 
     public List<Product> getAllProducts() {
@@ -30,4 +48,5 @@ public class ProductService {
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
     }
+
 }
