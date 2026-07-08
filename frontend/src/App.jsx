@@ -21,6 +21,7 @@ function App() {
           <Route path="/serials" element={<Serials />} />
           <Route path="/invoice/new" element={<NewInvoice />} />0
           <Route path="/invoices" element={<Invoices />} />
+          <Route path="/customers" element={<Customers />} />
         </Route>
       </Routes>
       <ToastContainer
@@ -33,6 +34,7 @@ function App() {
         theme="colored"
     />
     </BrowserRouter>
+    
   );
 }
 

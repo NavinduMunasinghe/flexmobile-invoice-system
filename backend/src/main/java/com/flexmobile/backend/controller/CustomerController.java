@@ -8,33 +8,45 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/customers")
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:5173")
 public class CustomerController {
 
     private final CustomerService customerService;
 
-    public CustomerController(CustomerService customerService){
+    public CustomerController(CustomerService customerService) {
         this.customerService = customerService;
     }
 
-    @PostMapping
-    public Customer saveCustomer(@RequestBody Customer customer){
-        return customerService.saveCustomer(customer);
-    }
-
     @GetMapping
-    public List<Customer> getAllCustomers(){
+    public List<Customer> getAllCustomers() {
         return customerService.getAllCustomers();
     }
 
     @GetMapping("/{id}")
-    public Customer getCustomer(@PathVariable Long id){
+    public Customer getCustomerById(@PathVariable Long id) {
         return customerService.getCustomerById(id);
     }
 
-    @DeleteMapping("/{id}")
-    public String deleteCustomer(@PathVariable Long id){
-        customerService.deleteCustomer(id);
-        return "Customer Deleted Successfully";
+    @PostMapping
+    public Customer saveCustomer(@RequestBody Customer customer) {
+        return customerService.saveCustomer(customer);
     }
+
+    @PutMapping("/{id}")
+    public Customer updateCustomer(
+            @PathVariable Long id,
+            @RequestBody Customer customer
+    ) {
+
+        customer.setCustomerId(id);
+
+        return customerService.saveCustomer(customer);
+
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteCustomer(@PathVariable Long id) {
+        customerService.deleteCustomer(id);
+    }
+
 }
